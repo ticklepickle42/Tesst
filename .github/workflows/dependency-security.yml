@@ -22,15 +22,15 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Generate dependency lockfile
-        run: npm install --package-lock-only --ignore-scripts --no-audit
+        run: npm install --package-lock-only --ignore-scripts --no-audit || npm install --package-lock-only --ignore-scripts --no-audit --legacy-peer-deps
 
       - name: Audit npm dependencies
         run: npm audit --audit-level=high
