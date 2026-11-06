@@ -1,0 +1,8 @@
+{
+  "name": "BSMS Web - Chess Arena & Gaming Hub",
+  "description": "The central digital hub featuring real-time Chess against AI, friend invites and spectator mode, Elo ranking system, global leaderboards, and custom gamemodes including 100 Pawns, Sudden Death Blitz, and Alien Chess.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

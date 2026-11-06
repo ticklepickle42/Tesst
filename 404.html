@@ -1,0 +1,68 @@
+<!--
+BSMS Web
+Copyright © 2026 Jellyfish Jelly
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>404 - Page Not Found</title>
+
+<!-- Vercel Web Analytics -->
+<script src="/js/vercel-analytics-bootstrap.js"></script>
+<script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+    
+<!-- Favicons -->
+<link rel="icon" href="/img/icon.png">
+<link rel="apple-touch-icon" href="/img/app-icon.png">
+
+
+<link rel="stylesheet" href="/css/styles.css">
+<link rel="stylesheet" href="/css/404.css">
+</head>
+
+<body>
+
+<div id="offlineBanner">You are currently offline</div>
+
+<!-- THE NORMAL "CLASSIC" LOOK -->
+<div id="classic-mode" class="view-layer active">
+  <div class="classic-card">
+    <h1 class="error-code">404</h1>
+    <div class="title">Page Not Found</div>
+    <p class="desc">
+      The page you are looking for does<br>
+      not exist or may have been removed.
+    </p>
+    <a href="/" class="btn" data-ga="404_home_btn">Go Back Home</a>
+  </div>
+</div>
+
+
+<!-- THE HIDDEN COMIC TRAP / CHAOS LOOK -->
+<div id="chaos-mode" class="view-layer">
+  <div class="chaos-error-wrapper">
+      <main id="chaosBox" class="chaos-content">
+          <h1 class="error-code">
+              <span class="digit digit-1">4</span>
+              <span class="digit digit-2">0</span>
+              <span class="digit digit-3">4</span>
+          </h1>
+          <div class="title">Page Not Found</div>
+          <p class="desc">
+              The page you're looking for was mysteriously swallowed by the void,
+              or it never even existed to begin with...
+          </p>
+          <div class="btn-comic-wrapper">
+              <a href="/" class="btn-comic" data-ga="404_home_btn">Escape to Home!</a>
+          </div>
+      </main>
+  </div>
+</div>
+
+<script src="/js/404.js"></script>
+
+</body>
+</html>

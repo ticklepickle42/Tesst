@@ -1,0 +1,197 @@
+<!--
+BSMS Web
+Copyright © 2026 Jellyfish Jelly
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="description" content="Browse active BSMS Web Users, discover friends, and connect.">
+<meta property="og:title" content="Users Directory | BSMS Web">
+<meta property="og:description" content="Browse active community members, discover friends, and connect across BSMS Web.">
+<meta property="og:url" content="https://bsms-web.com/users">
+<meta property="og:image" content="/img/app-icon.png">
+<meta property="og:type" content="website">
+<title>Users Directory | BSMS Web</title>
+
+<!-- Ban Check Enforcer -->
+<script src="/js/ban-check.js"></script>
+
+<!-- Account Update Checker -->
+<script src="/js/account-check.js"></script>
+
+<!-- Vercel Web Analytics -->
+<script src="/js/vercel-analytics-bootstrap.js"></script>
+<script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+    
+<!-- Favicons -->
+<link rel="icon" href="/img/icon.png">
+<link rel="apple-touch-icon" href="/img/app-icon.png">
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/css/styles.css">
+<link rel="stylesheet" href="/css/users.css">
+<script src="/js/legal-updates.js" defer></script>
+</head>
+<body>
+
+<svg style="position:absolute; width:0; height:0; overflow:hidden;" aria-hidden="true">
+    <defs>
+        <symbol id="ico-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></symbol>
+        <symbol id="ico-back" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></symbol>
+        <symbol id="ico-share" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/></symbol>
+        <symbol id="ico-verified" viewBox="0 0 24 24">
+            <path d="M23 12l-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 3 8.6 1.54 6.71 4.72l-3.61.81.34 3.68L1 12l2.44 2.78-.34 3.69 3.61.82 1.89 3.18L12 21l3.4 1.46 1.89-3.18 3.61-.82-.34-3.68L23 12z" fill="#3b82f6"/>
+            <path d="M10.09 16.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" fill="#ffffff"/>
+        </symbol>
+        <symbol id="ico-hammer" viewBox="0 0 24 24"><path d="M21.7 6.3l-3-3a1 1 0 0 0-1.4 0l-2.1 2.1 2.1 2.1-1.4 1.4-2.1-2.1-1.2 1.2a3 3 0 0 0-.7 1.4l-8.6 8.6a1.5 1.5 0 0 0 0 2.1l1.3 1.3a1.5 1.5 0 0 0 2.1 0l8.6-8.6a3 3 0 0 0 1.4-.7l1.2-1.2 2.1 2.1 1.4-1.4-2.1-2.1 2.1-2.1a1 1 0 0 0 0-1.4z"/></symbol>
+        <symbol id="ico-msg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></symbol>
+        <symbol id="ico-user" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></symbol>
+        <symbol id="ico-user-plus" viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></symbol>
+        <symbol id="ico-user-check" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm8.41-3.41L19 9.17l-3.59 3.59-1.41-1.41-1.41 1.41 2.82 2.82 5-5z"/></symbol>
+    </defs>
+</svg>
+
+<button id="controls-btn" onclick="location.href='/accounts'" title="Manage Account">
+    <div id="headerAvatar" class="fallback-initial">?</div>
+</button>
+
+<div id="appShell">
+    <div id="mainView">
+        <div class="page-header">
+            <h1>Discover <span>BSMS Web Users</span></h1>
+            <p>Explore profiles, build your network, and initiate direct messages across the platform.</p>
+        </div>
+
+        <div class="search-box">
+            <svg class="ic"><use href="#ico-search"></use></svg>
+            <input type="text" id="searchInput" class="input-field" placeholder="Search by name, @username..." oninput="DirectoryApp.onSearch(this.value)">
+        </div>
+
+        <div class="pill-grid">
+            <button class="pill active" onclick="DirectoryApp.setFilter('all', this)">All Accounts (<span id="count-all">0</span>)</button>
+            <button class="pill" onclick="DirectoryApp.setFilter('team', this)">BSMS Web Team (<span id="count-team">0</span>)</button>
+            <button class="pill" onclick="DirectoryApp.setFilter('following', this)">Following (<span id="count-following">0</span>)</button>
+            <button class="pill" onclick="DirectoryApp.setFilter('verified', this)">Verified</button>
+        </div>
+
+        <div id="myProfileContainer"></div>
+
+        <div id="usersGrid" class="user-grid">
+            <div class="state-container" style="grid-column: 1 / -1;">
+                <div class="spinner"></div>
+                <p>Loading active BSMS Web users...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Full Screen Profile View -->
+<div id="profileView">
+    <div class="pv-header">
+        <button class="icon-btn" onclick="DirectoryApp.closeProfile()"><svg class="ic"><use href="#ico-back"></use></svg></button>
+        <div class="pv-header-title">User Profile</div>
+        <button class="icon-btn" id="btnShareProfile"><svg class="ic"><use href="#ico-share"></use></svg></button>
+    </div>
+    <div class="pv-content">
+        <div class="pv-avatar" id="pvAvatar"></div>
+        <div class="pv-name-row" id="pvNameRow"></div>
+        <div class="pv-username" id="pvUsername"></div>
+        
+        <div class="pv-actions" id="pvActions">
+            <button class="btn sec" id="pvFollowBtn" style="flex:1;">Follow</button>
+            <button class="btn primary" id="pvDmBtn" style="flex:1;">Message</button>
+        </div>
+
+        <div class="pv-tabs">
+            <button class="pv-tab active" onclick="DirectoryApp.switchTab('bio', this)">Bio</button>
+            <button class="pv-tab" onclick="DirectoryApp.switchTab('followers', this)"><span id="pvCountFollowers">0</span> Followers</button>
+            <button class="pv-tab" onclick="DirectoryApp.switchTab('following', this)"><span id="pvCountFollowing">0</span> Following</button>
+        </div>
+
+        <div class="pv-tab-content">
+            <div id="pane-bio" class="pv-pane active">
+                <div class="pv-bio" id="pvBioText"></div>
+            </div>
+            <div id="pane-followers" class="pv-pane">
+                <div id="pvFollowersList"></div>
+            </div>
+            <div id="pane-following" class="pv-pane">
+                <div id="pvFollowingList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Badges Modals -->
+<div id="verifiedModal" class="overlay" onclick="if(event.target===this) UI.closeModal('verifiedModal')">
+    <div class="modal-card" style="align-items: center; text-align: center;">
+        <svg class="ic" style="width: 80px; height: 80px; fill: #3b82f6; margin-bottom: 16px;"><use href="#ico-verified"></use></svg>
+        <h2 style="font-size: 2rem; margin-bottom: 8px;">Verified Account</h2>
+        <p style="color: var(--fg2); margin-bottom: 20px;">
+            The account <strong id="vmUserDisplay" style="color:var(--fg);">---</strong> is verified. This means they have been manually confirmed by BSMS Web administrators as an authentic, notable figure.
+        </p>
+        <button class="btn sec" onclick="UI.closeModal('verifiedModal')">Close</button>
+    </div>
+</div>
+
+<div id="adminModal" class="overlay" onclick="if(event.target===this) UI.closeModal('adminModal')">
+    <div class="modal-card" style="align-items: center; text-align: center;">
+        <span class="admin-badge" style="font-size: 1.1rem; padding: 4px 14px; margin-bottom: 16px;">Admin</span>
+        <h2 style="font-size: 2rem; margin-bottom: 8px;">Administrator</h2>
+        <p style="color: var(--fg2); margin-bottom: 20px;">
+            The account <strong id="amUserDisplay" style="color:var(--fg);">---</strong> is a BSMS Web Administrator. Administrators hold root privileges to govern channels and manage systems.
+        </p>
+        <button class="btn sec" onclick="UI.closeModal('adminModal')">Close</button>
+    </div>
+</div>
+
+<div id="modModal" class="overlay" onclick="if(event.target===this) UI.closeModal('modModal')">
+    <div class="modal-card" style="align-items: center; text-align: center;">
+        <span class="mod-badge" style="font-size: 1.1rem; padding: 4px 14px; margin-bottom: 16px;">Mod</span>
+        <h2 style="font-size: 2rem; margin-bottom: 8px;">Community Moderator</h2>
+        <p style="color: var(--fg2); margin-bottom: 20px;">
+            The account <strong id="mmUserDisplay" style="color:var(--fg);">---</strong> is a BSMS Web Moderator. Community Moderators enforce safety guidelines and moderate reports.
+        </p>
+        <button class="btn sec" onclick="UI.closeModal('modModal')">Close</button>
+    </div>
+</div>
+
+<div id="devModal" class="overlay" onclick="if(event.target===this) UI.closeModal('devModal')">
+    <div class="modal-card" style="align-items: center; text-align: center;">
+        <div class="dev-badge-large">
+            <svg class="ic"><use href="#ico-hammer"></use></svg>
+        </div>
+        <h2 style="font-size: 2rem; margin-bottom: 8px;">Platform Developer</h2>
+        <p style="color: var(--fg2); margin-bottom: 20px;">
+            The account <strong id="dmUserDisplay" style="color:var(--fg);">---</strong> is a BSMS Web Developer. Developers design, program, and maintain core codebases.
+        </p>
+        <button class="btn sec" onclick="UI.closeModal('devModal')">Close</button>
+    </div>
+</div>
+
+<div id="ownerModal" class="overlay" onclick="if(event.target===this) UI.closeModal('ownerModal')">
+    <div class="modal-card" style="align-items: center; text-align: center;">
+        <span class="owner-badge" style="font-size: 1.1rem; padding: 4px 14px; margin-bottom: 16px;">Owner</span>
+        <h2 style="font-size: 2rem; margin-bottom: 8px;">Platform Owner</h2>
+        <p style="color: var(--fg2); margin-bottom: 20px;">
+            The account <strong id="omUserDisplay" style="color:var(--fg);">---</strong> is the BSMS Web Platform Owner. The Owner holds ultimate authority across the ecosystem.
+        </p>
+        <button class="btn sec" onclick="UI.closeModal('ownerModal')">Close</button>
+    </div>
+</div>
+
+<div id="toastContainer" onclick="UI.hideToast()">
+    <svg class="ic" style="width:20px;height:20px;"><use href="#ico-user"></use></svg>
+    <span id="toastText">Notification</span>
+</div>
+
+<script src="/js/users.js"></script>
+</body>
+</html>

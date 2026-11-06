@@ -1,0 +1,118 @@
+<!--
+BSMS Web
+Copyright © 2026 Jellyfish Jelly
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="description" content="BSMS Web Game Vault. A massive collection of interactive HTML5 games."/>
+<meta name="category" content="Education"/>
+<meta name="author" content="BSMS Web"/>
+<meta name="theme-color" content="#BB001E">
+<meta name="color-scheme" content="#BB001E">
+<meta name="application-name" content="BSMS Web Games">
+<meta name="application-version" content="v5.0.0">
+<meta property="og:title" content="BSMS Web Games">
+<meta property="og:description" content="A massive collection of interactive HTML5 games.">
+<meta property="og:category" content="Education">
+<meta property="og:url" content="https://bsms-web.com/g">
+<meta property="og:image" content="/img/app-icon.png">
+<meta property="og:type" content="website">
+<title>BSMS Web Games</title>
+
+<!-- Ban Check Enforcer -->
+<script src="/js/ban-check.js"></script>
+
+<!-- Account Update Checker -->
+<script src="/js/account-check.js"></script>
+
+<!-- Vercel Web Analytics -->
+<script src="/js/vercel-analytics-bootstrap.js"></script>
+<script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+    
+<!-- Favicons -->
+<link rel="icon" href="/img/icon.png">
+<link rel="apple-touch-icon" href="/img/app-icon.png">
+
+  
+
+<link rel="stylesheet" href="/css/styles.css">
+<link rel="stylesheet" href="/css/g.css">
+<script src="/js/legal-updates.js" defer></script>
+</head>
+<body>
+
+<div id="offlineBanner">You are currently offline</div>
+
+<a href="/" id="goHomeBtn" class="btn sec" style="width: auto;" data-ga="games_home_btn">← Home</a>
+
+<!-- Global User Button -->
+<div id="globalUserBtn" onclick="handleUserIconClick()" data-ga="games_user_btn"></div>
+
+<!-- Global Account Popup -->
+<div id="accountPopup" class="overlay" onclick="if(event.target===this) closePopup('accountPopup')">
+  <div class="popup" style="align-items:center;">
+    <div id="accPopupAvatar" style="width:86px;height:86px;border-radius:50%;border:3px solid var(--red);margin:0 auto 12px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:36px;background:var(--msg-bg);font-weight:bold;color:var(--fg);"></div>
+    <h2 id="accPopupName" style="margin-bottom:2px;">---</h2>
+    <p style="font-size:16px; margin-bottom:22px;">@<span id="accPopupUser">---</span></p>
+    <a href="/accounts" class="btn" data-ga="games_manage_account">Manage Account</a>
+    <button class="btn sec" onclick="closePopup('accountPopup')" style="border:none; margin-top:6px;">Close</button>
+  </div>
+</div>
+
+<!-- Page Content -->
+<div id="mainContent">
+  <div class="hero">
+    <h1>Game <span>Vault</span></h1>
+    <p>Dive into our massive collection of interactive HTML5 games. Launch any game below to start playing in your browser.</p>
+  </div>
+
+  <div class="search-container">
+    <input type="text" id="gameSearch" class="search-bar" placeholder="Search for a game...">
+    <div class="az-filters" id="azFilters">
+      <!-- Letters injected by JS -->
+    </div>
+  </div>
+
+  <div class="launcher-container">
+    <div class="launcher-grid" id="gamesGrid">
+      <div style="text-align:center; grid-column: 1 / -1; color: var(--fg2); font-size: 22px;">
+        <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
+        Loading game library...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="overlay" style="flex-direction: column; z-index: 3500;">
+  <h2 id="loadingText" style="color: #fff; font-size: 32px; margin-bottom: 20px;">Loading Game...</h2>
+  <div id="loadingSpinner" class="spinner"></div>
+  <button id="playBtn" class="btn" style="display: none; width: auto; font-size: 26px; padding: 12px 40px; border-radius: 30px;" data-ga="games_play_btn">Play Now</button>
+  <button id="cancelLoadBtn" class="btn sec" style="width: auto; margin-top: 20px; border: none;">Cancel</button>
+</div>
+
+<!-- Game Container (Iframe Wrapper) -->
+<div id="gameContainer">
+  <iframe id="gameIframe" allowfullscreen sandbox="allow-scripts allow-same-origin allow-pointer-lock"></iframe>
+</div>
+
+<!-- In-Game Menu -->
+<div id="inGameMenu" class="overlay" style="z-index: 4000;">
+  <div class="popup" style="align-items:center;">
+    <h2 style="margin-bottom: 24px;">Game Menu</h2>
+    <button class="btn" onclick="resumeGame()" style="margin-bottom:12px;" data-ga="games_resume_btn">Resume Game</button>
+    <button class="btn sec" onclick="quitGame(false)" data-ga="games_quit_btn">Quit Game & Save</button>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast">Press the <b>Escape</b> key to show menu</div>
+
+<!-- Core Application Script -->
+<script src="/js/g.js"></script>    
+</body>
+</html>

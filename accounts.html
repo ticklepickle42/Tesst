@@ -1,0 +1,379 @@
+<!--
+BSMS Web
+Copyright © 2026 Jellyfish Jelly
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="BSMS Web Account Manager. Manage your profile, identity, and security across the BSMS Web ecosystem."/>
+<meta name="category" content="Education"/>
+<meta name="author" content="BSMS Web"/>
+<meta name="theme-color" content="#BB001E">
+<meta name="color-scheme" content="#BB001E">
+<meta name="application-name" content="BSMS Web Accounts">
+<meta property="og:title" content="BSMS Web Accounts">
+<meta property="og:description" content="Manage your unified profile and security settings.">
+<meta property="og:category" content="Education">
+<meta property="og:url" content="https://bsms-web.com/accounts">
+<meta property="og:image" content="/img/app-icon.png">
+<meta property="og:type" content="website">
+<title>BSMS Web Accounts</title>
+
+<!-- Universal Ban Setup -->
+<script src="/js/accounts-setup.js"></script>
+
+<!-- Ban Check Enforcer -->
+<script src="/js/ban-check.js"></script>
+
+<!-- Account Update Checker -->
+<script src="/js/account-check.js"></script>
+
+<!-- Vercel Web Analytics -->
+<script src="/js/vercel-analytics-bootstrap.js"></script>
+<script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+    
+<!-- Favicons -->
+<link rel="icon" href="/img/icon.png">
+<link rel="apple-touch-icon" href="/img/app-icon.png">
+
+
+<!-- JSZip for Data Export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<link rel="stylesheet" href="/css/styles.css">
+<link rel="stylesheet" href="/css/accounts.css">
+<script src="/js/legal-updates.js" defer></script>
+</head>
+<body>
+
+<div id="offlineBanner">You are currently offline</div>
+
+<!-- THE REQUIRED BAN SCREEN CONTAINER -->
+<div id="ban-screen" class="screen" style="display: none; background: rgba(0,0,0,0.95); z-index: 9999;">
+  <div class="card" style="border-color: #ff3333; max-width: 480px; text-align: center;">
+    <h1 style="color: #ff3333; font-size: 38px;">Access Denied</h1>
+    <p id="ban-message" style="margin-bottom: 24px;"></p>
+    
+    <div style="background: var(--input-bg); border: 2px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 24px; text-align: left;">
+      <strong style="color: var(--fg); font-size: 19px;">Reason:</strong>
+      <div id="ban-reason" style="color: var(--fg2); font-size: 17px; margin-bottom: 12px; word-wrap: break-word;">---</div>
+      <strong style="color: var(--fg); font-size: 19px;">Ban Status:</strong>
+      <div id="ban-timer" style="color: var(--fg2); font-size: 17px; font-family: monospace;">---</div>
+    </div>
+    
+    <button id="ban-logout-btn" class="btn warn" style="display: none; margin-bottom: 10px; border: 2px solid #ff3333; background: transparent; color: #ff3333;">Log Out</button>
+    <p id="ban-device-warning" style="display: none; color: var(--fg2); font-size: 15px; margin-top: 10px; margin-bottom: 15px;">For ecosystem integrity, active accounts cannot be logged out while the physical device is restricted.</p>
+  </div>
+</div>
+
+<!-- Loaders & Modals -->
+<div id="initLoadingScreen" class="screen show">
+  <div class="card" style="background:transparent; border:none; box-shadow:none;">
+    <div class="spinner"></div>
+    <h1 style="font-size:46px;">BSMS Web</h1>
+    <div style="font-size:20px; color:var(--red);">Loading Account...</div>
+  </div>
+</div>
+
+<div id="actionLoadingScreen" class="overlay">
+  <div class="popup" style="width: auto; background: transparent; border: none; align-items: center; box-shadow: none;">
+    <div class="spinner"></div>
+    <div id="actionLoadingText" style="font-size: 24px; font-weight: bold; color:var(--red);">Please wait...</div>
+  </div>
+</div>
+
+<div id="alertOverlay" class="overlay" onclick="if(event.target===this) closePopup('alertOverlay')">
+  <div class="popup">
+    <p id="alertText" style="font-size:22px;margin-bottom:24px;color:var(--fg)"></p>
+    <button class="btn" onclick="closePopup('alertOverlay')" data-ga="alert_ok">OK</button>
+  </div>
+</div>
+
+<!-- Modals -->
+<div id="changeUsernameModal" class="overlay" onclick="if(event.target===this) closePopup('changeUsernameModal')">
+  <div class="popup">
+    <h2>Change Username</h2>
+    <p>You can only change your username once every 7 days. Your new username must not be taken.</p>
+    <input type="text" id="newUsernameInput" placeholder="New Username (3-20 chars)" maxlength="20"/>
+    <p style="font-size: 15px; color:var(--fg2); margin-top:-5px;">Only letters, numbers, dashes, and underscores allowed.</p>
+    <button class="btn warn" id="confirmUsernameBtn" onclick="executeUsernameChange()" data-ga="confirm_username_change">Confirm Change</button>
+    <button class="btn sec" onclick="closePopup('changeUsernameModal')">Cancel</button>
+  </div>
+</div>
+
+<div id="removeAvatarModal" class="overlay" onclick="if(event.target===this) closePopup('removeAvatarModal')">
+  <div class="popup" style="text-align:center;">
+    <h2 style="color:var(--fg);">Remove Profile Picture?</h2>
+    <p style="color:var(--fg2); line-height:1.5;">Are you sure you want to remove your profile picture? Your avatar will revert to your default letter initials.</p>
+    <div style="display:flex; gap:12px; margin-top:14px;">
+      <button class="btn sec" style="flex:1;" onclick="closePopup('removeAvatarModal')">Cancel</button>
+      <button class="btn" style="flex:1; background:#ef4444; border-color:#dc2626;" onclick="confirmRemoveAvatar()">Remove</button>
+    </div>
+  </div>
+</div>
+
+<div id="deleteAccountModal" class="overlay" onclick="if(event.target===this) closePopup('deleteAccountModal')">
+  <div class="popup">
+    <h2 style="color:#ff3333;">Delete Account</h2>
+    <p>This action is irreversible. All of your BSMS Web data will be permanently lost.</p>
+    <p style="font-size: 16px;">Please confirm your credentials to proceed.</p>
+    <input type="text" id="delAuthUser" placeholder="Enter your username"/>
+    <input type="password" id="delAuthPass" placeholder="Enter your password"/>
+    <button class="btn warn" id="confirmDeleteBtn" onclick="verifyAccountDeletion()" data-ga="confirm_delete_account">Proceed</button>
+    <button class="btn sec" onclick="closePopup('deleteAccountModal')">Cancel</button>
+  </div>
+</div>
+
+<div id="deleteCountdownModal" class="overlay" style="background:rgba(20,0,0,0.96);">
+  <div class="popup" style="border-color:#ff3333; text-align:center;">
+    <h2 style="color:#ff3333;">Account Deletion</h2>
+    <p>Your account will be permanently deleted in:</p>
+    <div id="deleteCountdownDisplay">10</div>
+    <p style="font-size:18px;">This is your last chance to abort.</p>
+    <button class="btn sec" style="border-color:var(--border);" onclick="cancelDeletion()" data-ga="cancel_deletion">Cancel Deletion</button>
+  </div>
+</div>
+
+<!-- Authentication Screen (Login / Sign Up) -->
+<div id="authScreen" class="screen">
+  <div class="card">
+    <div class="logo-img">
+        <svg style="width:40px;height:40px;margin-top:14px;fill:var(--red);" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    </div>
+    <h1 id="authTitle">Sign In</h1>
+    <p id="authSubtitle">Access your BSMS Web Account</p>
+    
+    <div style="text-align: left;">
+      <input id="authUsername" type="text" placeholder="Username (3-20 chars)" maxlength="20" autocomplete="username"/>
+      <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password"/>
+    </div>
+    
+    <div id="signupLegalRequirements" hidden style="margin-top:16px;padding:15px;text-align:left;border:1px solid var(--border);border-radius:14px;background:var(--input-bg);">
+      <p style="font-size:13px;color:var(--fg2);margin:0 0 12px;">Review both documents before creating your account.</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;">
+        <strong style="font-size:14px;">Terms of Service</strong>
+        <button type="button" class="btn sec" style="margin:0;padding:7px 11px;font-size:12px;" onclick="window.BSMSLegalUpdates?.review('terms')">View Terms</button>
+      </div>
+      <label style="display:flex;align-items:flex-start;gap:9px;font-size:13px;line-height:1.4;margin-bottom:14px;">
+        <input id="signupTermsAccepted" type="checkbox" style="margin-top:2px;accent-color:var(--red);">
+        <span>I agree to the Terms of Service.</span>
+      </label>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;">
+        <strong style="font-size:14px;">Privacy Policy</strong>
+        <button type="button" class="btn sec" style="margin:0;padding:7px 11px;font-size:12px;" onclick="window.BSMSLegalUpdates?.review('privacy')">View Privacy</button>
+      </div>
+      <label style="display:flex;align-items:flex-start;gap:9px;font-size:13px;line-height:1.4;">
+        <input id="signupPrivacyAcknowledged" type="checkbox" style="margin-top:2px;accent-color:var(--red);">
+        <span>I acknowledge the Privacy Policy.</span>
+      </label>
+    </div>
+    <button class="btn" id="authSubmitBtn" onclick="handleAuth()" style="margin-top: 14px;" data-ga="auth_submit">Login</button>
+    <a href="/" class="btn sec" style="margin-top: 10px;" data-ga="auth_home">Go Back Home</a>
+    
+    <div style="margin-top: 22px; font-size: 18px; color: var(--fg2);">
+      <span id="authToggleText">Don't have an account?</span> 
+      <strong style="color:var(--red); cursor:pointer;" onclick="toggleAuthMode()" data-ga="auth_toggle">Sign up here</strong>
+    </div>
+  </div>
+</div>
+
+<!-- Logged In Dashboard -->
+<div id="appShell">
+  <div id="sidebar">
+    <div class="sidebar-title">Accounts</div>
+    <button class="navBtn active" id="dock-profile" onclick="switchPanel('profile')" data-ga="tab_profile">Profile</button>
+    <button class="navBtn" id="dock-security" onclick="switchPanel('security')" data-ga="tab_security">Security</button>
+    <button class="navBtn" id="dock-sessions" onclick="switchPanel('sessions')" data-ga="tab_sessions">Sessions</button>
+    <div class="sidebar-gap"></div>
+    <a href="/" class="btn sec" style="text-align: left; padding: 12px 16px; font-size: 19px; border-color: transparent;" data-ga="dash_home">← Go Back Home</a>
+    <div style="font-size: 15px; color:var(--fg2); text-align:center; margin-bottom:10px;">Logged in as <br><strong id="sidebarUsername" style="color:var(--fg);font-size:17px;">---</strong></div>
+    <button class="navBtn" style="border-color:var(--border); color:#ff4444; justify-content:center; font-weight:bold;" onclick="logout()" data-ga="dash_logout">Logout</button>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;">
+    
+    <div id="mobileTopbar">
+      <button id="mobileMenuBtn" onclick="toggleMobileDrawer()">
+        <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--fg);"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+      </button>
+      <div class="mobile-title">Accounts</div>
+      <div style="width:40px;"></div> <!-- Spacer -->
+    </div>
+    
+    <div id="mobileDrawerBackdrop" onclick="closeMobileDrawer()"></div>
+    <div id="mobileDrawer">
+      <div class="sidebar-title">Menu</div>
+      <button class="navBtn active" id="mob-profile" onclick="switchPanel('profile'); closeMobileDrawer()">Profile</button>
+      <button class="navBtn" id="mob-security" onclick="switchPanel('security'); closeMobileDrawer()">Security</button>
+      <button class="navBtn" id="mob-sessions" onclick="switchPanel('sessions'); closeMobileDrawer()">Sessions</button>
+      <div class="sidebar-gap"></div>
+      <a href="/" class="btn sec" style="text-align: left; padding: 12px 16px; font-size: 19px; border-color: transparent;">← Go Back Home</a>
+      <div style="font-size: 15px; color:var(--fg2); text-align:center; margin-bottom:10px;">Logged in as <br><strong id="mobileSidebarUsername" style="color:var(--fg);font-size:17px;">---</strong></div>
+      <button class="navBtn" style="border-color:var(--border); color:#ff4444; justify-content:center; font-weight:bold;" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <div id="mainView">
+        
+      <!-- Profile Panel -->
+      <div id="profilePanel" class="panel show">
+        <div class="panel-header">
+            <h1>Public Profile</h1>
+            <p>Manage your identity across the BSMS Web ecosystem.</p>
+        </div>
+        
+        <div class="form-group" style="display:flex; flex-direction:column; align-items:center;">
+            <div class="avatar-preview" id="avatarPreviewContainer"></div>
+            <input type="file" id="avatarUpload" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)"/>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn sec" style="width:auto; padding: 8px 18px; font-size:18px;" onclick="document.getElementById('avatarUpload').click()" data-ga="upload_avatar">Upload Picture</button>
+                <button class="btn sec" id="removeAvatarBtn" style="width:auto; padding: 8px 18px; font-size:18px; color:#ef4444; border-color:#ef4444; display:none;" onclick="openPopup('removeAvatarModal')" data-ga="remove_avatar">Remove Picture</button>
+            </div>
+            <p style="font-size:15px; color:var(--fg2); margin: 12px 0 20px 0;">Account created: <strong id="accountCreatedDate">---</strong></p>
+        </div>
+
+        <div class="form-group">
+            <label>Username <span style="font-size:14px; color:var(--fg2);">(Used for login)</span></label>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="profileUsername" disabled style="margin:0;"/>
+                <button class="btn sec" style="width:auto; margin:0;" onclick="openUsernameModal()" data-ga="open_username_modal">Change</button>
+            </div>
+            <div id="usernameCooldownText" style="font-size: 15px; color:var(--red); margin-top:8px; display:none;"></div>
+        </div>
+
+        <div class="form-group">
+            <label>Display Name <span style="font-size:14px; color:var(--fg2);">(Visible to others)</span></label>
+            <input type="text" id="profileDisplayName" placeholder="Your display name" maxlength="30" oninput="updateChatColorPreview()"/>
+        </div>
+
+        <!-- Name / Chat Color Switcher -->
+        <div class="form-group">
+            <label style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Name Color</span>
+                <span style="font-size:13px; color:var(--fg2);">Color shown for your name in chat and profile</span>
+            </label>
+
+            <!-- Quick Swatches -->
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 10px;">
+                <button type="button" class="color-swatch" style="background:#ffffff;" onclick="setPresetColor('#ffffff')" title="Default White"></button>
+                <button type="button" class="color-swatch" style="background:#BB001E;" onclick="setPresetColor('#BB001E')" title="BSMS Red"></button>
+                <button type="button" class="color-swatch" style="background:#ff4b72;" onclick="setPresetColor('#ff4b72')" title="Coral"></button>
+                <button type="button" class="color-swatch" style="background:#f59e0b;" onclick="setPresetColor('#f59e0b')" title="Gold"></button>
+                <button type="button" class="color-swatch" style="background:#10b981;" onclick="setPresetColor('#10b981')" title="Emerald"></button>
+                <button type="button" class="color-swatch" style="background:#06b6d4;" onclick="setPresetColor('#06b6d4')" title="Cyan"></button>
+                <button type="button" class="color-swatch" style="background:#3b82f6;" onclick="setPresetColor('#3b82f6')" title="Sky Blue"></button>
+                <button type="button" class="color-swatch" style="background:#8b5cf6;" onclick="setPresetColor('#8b5cf6')" title="Purple"></button>
+                <button type="button" class="color-swatch" style="background:#ec4899;" onclick="setPresetColor('#ec4899')" title="Pink"></button>
+            </div>
+
+            <!-- Custom Color Picker + Hex + Live Preview -->
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <input type="color" id="profileChatColor" value="#ffffff" style="width:52px; height:46px; padding:2px; border-radius:10px; cursor:pointer; background:var(--input-bg); border:2px solid var(--border); flex-shrink:0; margin:0;" oninput="onColorPickerChange(this.value)"/>
+                <input type="text" id="profileChatColorHex" placeholder="#ffffff" maxlength="7" style="width:130px; margin:0; text-transform:uppercase; font-family:monospace;" oninput="onHexInputChange(this.value)"/>
+                <button type="button" class="btn sec" style="width:auto; margin:0; padding:8px 16px; font-size:16px;" onclick="resetChatColor()">Reset</button>
+                <div style="font-size:18px; margin-left:auto; display:flex; align-items:center; gap:6px;">
+                    <span style="color:var(--fg2);">Preview:</span>
+                    <strong id="chatColorPreviewText" style="color:#ffffff;">Username</strong>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Bio</span>
+                <span style="font-size:13px; color:var(--fg2);">Supports markdown: **bold**, *italic*, <u>underline</u></span>
+            </label>
+            <textarea id="profileBio" placeholder="Tell us a bit about yourself..." maxlength="200" oninput="updateBioPreview()"></textarea>
+            <div style="margin-top:6px; padding:8px 12px; background:var(--input-bg); border:1px solid var(--border); border-radius:10px; font-size:15px;">
+                <div style="font-size:11px; color:var(--fg2); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Bio Live Preview</div>
+                <div id="bioPreviewContent" style="color:var(--fg); line-height:1.4;"></div>
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 24px; padding: 16px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 14px;">
+            <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer; margin:0;">
+                <div>
+                    <strong style="font-size:18px; color:var(--fg);">Show Profile in Users Directory</strong>
+                    <p style="font-size:14px; color:var(--fg2); margin:4px 0 0;">Allow your profile to appear publicly in the /users directory list. If disabled, you won't appear in the directory search/list, but others can still view your profile via direct URL.</p>
+                </div>
+                <input type="checkbox" id="toggleShowInUsers" checked style="width:24px; height:24px; accent-color:var(--red); cursor:pointer; flex-shrink:0; margin-left:16px;"/>
+            </label>
+        </div>
+
+        <div class="panel-header" style="margin-top: 40px;">
+            <h2 style="margin:0; font-size: 32px; color:var(--fg);">Contact Information (Optional)</h2>
+        </div>
+
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="profileEmail" placeholder="name@example.com"/>
+        </div>
+
+        <div class="form-group">
+            <label>Phone Number</label>
+            <input type="tel" id="profilePhone" placeholder="(123) 456-7890"/>
+        </div>
+
+        <button class="btn" id="saveProfileBtn" onclick="saveProfile()" style="margin-top: 20px; margin-bottom: 60px;" data-ga="save_profile">Save Profile Changes</button>
+      </div>
+
+      <!-- Security Panel -->
+      <div id="securityPanel" class="panel">
+        <div class="panel-header">
+            <h1>Security</h1>
+            <p>Update your password and export your data.</p>
+        </div>
+        
+        <div class="form-group">
+            <label>Current Password</label>
+            <input type="password" id="secCurrentPass" placeholder="Enter current password"/>
+        </div>
+        <div class="form-group">
+            <label>New Password</label>
+            <input type="password" id="secNewPass" placeholder="Enter new password (min 6 chars)"/>
+        </div>
+        <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" id="secConfirmPass" placeholder="Confirm new password"/>
+        </div>
+        
+        <button class="btn warn" id="updatePasswordBtn" onclick="changePassword()" style="margin-top: 14px;" data-ga="update_password">Update Password</button>
+
+        <div style="margin-top: 60px; padding-top: 30px; border-top: 2px solid var(--border);">
+            <h2 style="margin: 0 0 12px; font-size:32px;">Export Data</h2>
+            <p style="font-size:18px; color:var(--fg2); margin:0 0 20px;">Download a ZIP file containing your unified profile, chats, and configurations.</p>
+            <button class="btn sec" id="exportDataBtn" onclick="exportData()" data-ga="export_data">Request Data Export</button>
+        </div>
+
+        <div style="margin-top: 60px; padding-top: 30px; border-top: 2px solid var(--border); margin-bottom: 40px;">
+            <h2 style="color: #ff3333; margin: 0 0 12px; font-size:32px;">Danger Zone</h2>
+            <p style="font-size:18px; color:var(--fg2); margin:0 0 20px;">Once you delete your account, there is no going back. Please be certain.</p>
+            <button class="btn warn" style="background:transparent; color:#ff3333; border-color:#ff3333;" onclick="openPopup('deleteAccountModal')" data-ga="open_delete_modal">Delete Account</button>
+        </div>
+      </div>
+
+      <!-- Sessions Panel -->
+      <div id="sessionsPanel" class="panel">
+        <div class="panel-header">
+            <h1>Active Sessions</h1>
+            <p>Manage the devices currently logged into your account.</p>
+        </div>
+
+        <div id="sessionsListContainer">
+            <div style="text-align:center; color:var(--fg2); padding: 20px;">Loading sessions...</div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="notifContainer"></div>
+
+<script src="/js/accounts.js"></script>
+</body>
+</html>
