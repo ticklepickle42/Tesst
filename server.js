@@ -23,7 +23,9 @@ import versionHandler from './api/version.js';
 import reportsHandler from './api/reports.js';
 import supportConversationsHandler from './api/support-conversations.js';
 import legalHandler from './api/legal.js';
-import chessHandler, { chessOnlineState, cleanRoomCode, pushClientEvent } from './api/chess.js';
+import mediaHandler from './api/media.js';
+import voiceHandler from './api/voice.js';
+import chessHandler, { chessOnlineState, cleanRoomCode, pushClientEvent, registerWsSender } from './api/chess.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -90,6 +92,8 @@ app.use('/api/version', (req, res) => versionHandler(req, res));
 app.use('/api/reports', (req, res) => reportsHandler(req, res));
 app.use('/api/support-conversations', (req, res) => supportConversationsHandler(req, res));
 app.use('/api/legal', (req, res) => legalHandler(req, res));
+app.use('/api/media', (req, res) => mediaHandler(req, res));
+app.use('/api/voice', (req, res) => voiceHandler(req, res));
 app.use('/api/chess', (req, res) => chessHandler(req, res));
 
 // BSMS Chess Arena Member Directory & Account Sync REST Endpoints
@@ -241,13 +245,23 @@ app.post('/api/members/sync', (req, res) => {
     return res.json({ ok: true, member: record, members: getSortedMembersList() });
 });
 
+registerWsSender((clientId, data) => {
+    const entry = clients.get(clientId);
+    if (entry && entry.ws && entry.ws.readyState === WebSocket.OPEN) {
+        try {
+            entry.ws.send(JSON.stringify(data));
+        } catch {}
+    }
+});
+
 function sendToClient(clientId, data) {
     const entry = clients.get(clientId);
-    if (entry && entry.ws.readyState === WebSocket.OPEN) {
-        entry.ws.send(JSON.stringify(data));
-    } else {
-        pushClientEvent(clientId, data);
+    if (entry && entry.ws && entry.ws.readyState === WebSocket.OPEN) {
+        try {
+            entry.ws.send(JSON.stringify(data));
+        } catch {}
     }
+    pushClientEvent(clientId, data);
 }
 
 wss.on('connection', (ws) => {
@@ -268,6 +282,15 @@ wss.on('connection', (ws) => {
                     status: 'online'
                 };
                 clients.set(currentClientId, { ws, user: userObj });
+                chessOnlineState.clients.set(currentClientId, {
+                    ...userObj,
+                    wins: typeof msg.wins === 'number' ? msg.wins : 0,
+                    draws: typeof msg.draws === 'number' ? msg.draws : 0,
+                    losses: typeof msg.losses === 'number' ? msg.losses : 0,
+                    streak: typeof msg.streak === 'number' ? msg.streak : 0,
+                    roomId: null,
+                    lastSeen: Date.now()
+                });
                 upsertMemberFromUser(userObj, {
                     wins: msg.wins,
                     draws: msg.draws,
