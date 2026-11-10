@@ -455,29 +455,89 @@ export function processOnlineAction(action, body) {
     } else if (action === 'game:move') {
         const roomId = cleanRoomCode(body.roomId || client.roomId);
         const room = chessOnlineState.rooms.get(roomId);
-        if (room && body.move) {
-            if (!Array.isArray(room.moves)) room.moves = [];
-            const moveIndex = typeof body.moveIndex === 'number' ? body.moveIndex : room.moves.length;
-            const moveEntry = {
-                ...body.move,
-                moveIndex,
-                byClientId: clientId,
-                timestamp: now
-            };
-            // Avoid duplicate append of the exact same moveIndex
-            if (!room.moves.some((m) => m.moveIndex === moveIndex && m.san === body.move.san)) {
-                room.moves.push(moveEntry);
+        if (room && room.status !== 'finished' && body.move) {
+            const isWhite = room.whitePlayer?.clientId === clientId;
+            const isBlack = room.blackPlayer?.clientId === clientId;
+            if (isWhite || isBlack) {
+                if (!Array.isArray(room.moves)) room.moves = [];
+                const expectedColor = room.moves.length % 2 === 0 ? 'w' : 'b';
+                const playerColor = isWhite ? 'w' : 'b';
+                if (playerColor !== expectedColor || room.lastMoverClientId === clientId) {
+                    pushClientEvent(clientId, {
+                        type: 'game:error',
+                        message: 'Not your turn or move already processed.'
+                    });
+                    return getPublicLobbySnapshot(clientId);
+                }
+
+                const moveIndex = typeof body.moveIndex === 'number' ? body.moveIndex : room.moves.length;
+                const moveEntry = {
+                    ...body.move,
+                    moveIndex,
+                    byClientId: clientId,
+                    timestamp: now
+                };
+                if (!room.moves.some((m) => m.moveIndex === moveIndex && m.san === body.move.san)) {
+                    room.moves.push(moveEntry);
+                }
+                room.lastMoverClientId = clientId;
+                room.updatedAt = now;
+                const targetId = isWhite ? room.blackPlayer?.clientId : room.whitePlayer?.clientId;
+                if (targetId) {
+                    pushClientEvent(targetId, {
+                        type: 'game:opponent_move',
+                        roomId: room.roomId,
+                        move: moveEntry
+                    });
+                }
             }
-            room.updatedAt = now;
-            const targetId =
-                room.whitePlayer?.clientId === clientId
-                    ? room.blackPlayer?.clientId
-                    : room.whitePlayer?.clientId;
+        }
+    } else if (action === 'game:draw_offer') {
+        const roomId = cleanRoomCode(body.roomId || client.roomId);
+        const room = chessOnlineState.rooms.get(roomId);
+        if (room && room.status !== 'finished') {
+            const isWhite = room.whitePlayer?.clientId === clientId;
+            const targetId = isWhite ? room.blackPlayer?.clientId : room.whitePlayer?.clientId;
             if (targetId) {
                 pushClientEvent(targetId, {
-                    type: 'game:opponent_move',
+                    type: 'game:draw_offered',
                     roomId: room.roomId,
-                    move: moveEntry
+                    fromUser: client
+                });
+            }
+        }
+    } else if (action === 'game:draw_accept') {
+        const roomId = cleanRoomCode(body.roomId || client.roomId);
+        const room = chessOnlineState.rooms.get(roomId);
+        if (room && room.status !== 'finished') {
+            room.status = 'finished';
+            room.reason = 'agreement';
+            room.winner = 'draw';
+            room.updatedAt = now;
+            const notifyIds = [room.whitePlayer?.clientId, room.blackPlayer?.clientId].filter(Boolean);
+            notifyIds.forEach((pid) => {
+                pushClientEvent(pid, {
+                    type: 'game:ended',
+                    roomId: room.roomId,
+                    reason: 'agreement',
+                    winner: 'draw'
+                });
+            });
+            const wClient = chessOnlineState.clients.get(room.whitePlayer?.clientId);
+            if (wClient) wClient.status = 'online';
+            const bClient = chessOnlineState.clients.get(room.blackPlayer?.clientId);
+            if (bClient) bClient.status = 'online';
+        }
+    } else if (action === 'game:draw_decline') {
+        const roomId = cleanRoomCode(body.roomId || client.roomId);
+        const room = chessOnlineState.rooms.get(roomId);
+        if (room && room.status !== 'finished') {
+            const isWhite = room.whitePlayer?.clientId === clientId;
+            const targetId = isWhite ? room.blackPlayer?.clientId : room.whitePlayer?.clientId;
+            if (targetId) {
+                pushClientEvent(targetId, {
+                    type: 'game:draw_declined',
+                    roomId: room.roomId
                 });
             }
         }
